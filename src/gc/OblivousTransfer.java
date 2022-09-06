@@ -8,8 +8,7 @@ import entity.GroupFactory;
 public class OblivousTransfer {
 	Group gp = GroupFactory.getGroup("CyclicGroup.txt");
 	
-	
-	
+	String hello = "";
 	
 	public static void main(String[] args) {
 		OblivousTransfer ot = new OblivousTransfer();
