@@ -9,6 +9,7 @@ public class OblivousTransfer {
 	Group gp = GroupFactory.getGroup("CyclicGroup.txt");
 	
 	String hello = "";
+	String hi = "";
 	
 	public static void main(String[] args) {
 		OblivousTransfer ot = new OblivousTransfer();
