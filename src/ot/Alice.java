@@ -1,4 +1,4 @@
-package gc;
+package ot;
 
 import java.math.BigInteger;
 
@@ -31,8 +31,8 @@ public class Alice {
 	public static void main(String[] args) {
 		Alice alice = new Alice();
 		
-		byte[] m0 = new byte[32];
-		byte[] m1 = new byte[32];
+		byte[] m0 = new byte[16];
+		byte[] m1 = new byte[16];
 		
 		for(int i=0; i<m0.length; i++) {
 			m0[i] = 0;

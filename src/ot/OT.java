@@ -1,4 +1,4 @@
-package gc;
+package ot;
 
 import java.math.BigInteger;
 
@@ -38,18 +38,18 @@ public class OT {
 		BigInteger k = gp.genRandomZq();
 		
 		cee.c1 = gp.g.modPow(k, gp.p);
-		cee.e0 = Hash.XOR(m0, Hash.Sha256(h0.modPow(k, gp.p).toByteArray()));
-		cee.e1 = Hash.XOR(m1, Hash.Sha256(h1.modPow(k, gp.p).toByteArray()));
+		cee.e0 = Hash.XOR(m0, Hash.MD5(h0.modPow(k, gp.p).toByteArray()));
+		cee.e1 = Hash.XOR(m1, Hash.MD5(h1.modPow(k, gp.p).toByteArray()));
 		
 		return cee;
 	}
 	
 	public static byte[] R_m(BigInteger x, byte b, CEE cee) {
 		if(b == 0) {
-			byte[] m0 = Hash.XOR(cee.e0, Hash.Sha256(cee.c1.modPow(x, gp.p).toByteArray()));
+			byte[] m0 = Hash.XOR(cee.e0, Hash.MD5(cee.c1.modPow(x, gp.p).toByteArray()));
 			return m0;
 		}else if(b == 1){
-			byte[] m1 = Hash.XOR(cee.e1, Hash.Sha256(cee.c1.modPow(x, gp.p).toByteArray()));
+			byte[] m1 = Hash.XOR(cee.e1, Hash.MD5(cee.c1.modPow(x, gp.p).toByteArray()));
 			return m1;
 		}
 		
@@ -59,8 +59,8 @@ public class OT {
 	
 	public static void main(String[] args) {
 		
-		byte[] m0 = new byte[32];  //256 bits
-		byte[] m1 = new byte[32];
+		byte[] m0 = new byte[16];  //128 bits   In Yao's Garbled Circuit, the label length is usually set to 128 bits.
+		byte[] m1 = new byte[16];
 		byte b = 0;
 		
 		for(int i=0; i<m0.length; i++) {

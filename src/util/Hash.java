@@ -15,6 +15,19 @@ public class Hash {
 	        }
 	}
 	
+	public static byte[] MD5(byte[] message) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5"); // The output of MD5 is 16 bytes (128 bits).
+			md.update(message);
+			return md.digest();
+			
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} 
+	}
+	
 	public static byte[] XOR(byte[] m1, byte[] m2) {
 		
 		if(m1.length == m2.length && m1.length > 0) {
