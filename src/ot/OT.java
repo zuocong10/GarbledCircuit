@@ -2,9 +2,9 @@ package ot;
 
 import java.math.BigInteger;
 
-import entity.CEE;
-import entity.Group;
-import entity.GroupFactory;
+import ot.entity.CEE;
+import ot.entity.Group;
+import ot.entity.GroupFactory;
 import util.Hash;
 
 // OT protocol based on Nigel Smart’s "Cryptography Made Simple"

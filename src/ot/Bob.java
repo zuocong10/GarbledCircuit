@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import java.net.UnknownHostException;
 
 import communication.Client;
-import entity.CEE;
+import ot.entity.CEE;
 
 public class Bob {
 	

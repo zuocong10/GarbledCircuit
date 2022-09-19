@@ -3,7 +3,7 @@ package ot;
 import java.math.BigInteger;
 
 import communication.Server;
-import entity.CEE;
+import ot.entity.CEE;
 
 public class Alice {
 	

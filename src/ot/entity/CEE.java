@@ -1,4 +1,4 @@
-package entity;
+package ot.entity;
 
 import java.io.Serializable;
 import java.math.BigInteger;
