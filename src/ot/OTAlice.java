@@ -5,13 +5,10 @@ import java.math.BigInteger;
 import communication.Server;
 import ot.entity.CEE;
 
-public class Alice {
+public class OTAlice {
 	
-	public void AliceCom(byte[] m0, byte[] m1) {
+	public void AliceCom(Server server, byte[] m0, byte[] m1) {
 		try {
-			
-			Server server = new Server();
-			
 			BigInteger c = OT.S_c();
 			server.oout.writeObject(c);
 			server.oout.flush();
@@ -29,16 +26,24 @@ public class Alice {
 	}
 	
 	public static void main(String[] args) {
-		Alice alice = new Alice();
-		
-		byte[] m0 = new byte[16];
-		byte[] m1 = new byte[16];
-		
-		for(int i=0; i<m0.length; i++) {
-			m0[i] = 0;
-			m1[i] = (byte) i;
+		OTAlice alice = new OTAlice();
+		try {
+			Server server = new Server();
+			byte[] m0 = new byte[16];
+			byte[] m1 = new byte[16];
+			
+			for(int i=0; i<m0.length; i++) {
+				m0[i] = 0;
+				m1[i] = (byte) i;
+			}
+			
+			alice.AliceCom(server, m0, m1);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		alice.AliceCom(m0, m1);
+		
 	}
 }
