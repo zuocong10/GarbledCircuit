@@ -17,11 +17,19 @@ public class Client {
 	
 	private Socket socket = null;
 	
-	public Client() throws UnknownHostException, IOException {
-		socket = new Socket(server_IP, server_port);
-		System.out.println("成功连接到服务器 " + server_IP);
-		oout = new ObjectOutputStream(socket.getOutputStream());
-		oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+	public Client() {
+		try {
+			socket = new Socket(server_IP, server_port);
+			System.out.println("成功连接到服务器 " + server_IP);
+			oout = new ObjectOutputStream(socket.getOutputStream());
+			oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) {

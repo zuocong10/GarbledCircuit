@@ -7,7 +7,7 @@ import ot.entity.CEE;
 
 public class OTAlice {
 	
-	public void AliceCom(Server server, byte[] m0, byte[] m1) {
+	public static void AliceCom(Server server, byte[] m0, byte[] m1) {
 		try {
 			BigInteger c = OT.S_c();
 			server.oout.writeObject(c);
@@ -26,8 +26,6 @@ public class OTAlice {
 	}
 	
 	public static void main(String[] args) {
-		OTAlice alice = new OTAlice();
-		try {
 			Server server = new Server();
 			byte[] m0 = new byte[16];
 			byte[] m1 = new byte[16];
@@ -37,13 +35,6 @@ public class OTAlice {
 				m1[i] = (byte) i;
 			}
 			
-			alice.AliceCom(server, m0, m1);
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
+			OTAlice.AliceCom(server, m0, m1);
 	}
 }

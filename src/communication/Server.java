@@ -1,6 +1,7 @@
 package communication;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
@@ -15,14 +16,19 @@ public class Server {
 	public ObjectInputStream oin = null;
 	public ObjectOutputStream oout = null;
 	
-	public Server() throws Exception{
-		server = new ServerSocket(server_port);
-		System.out.println("等待连接...");
-		socket = server.accept();
-		System.out.println("ip: " + socket.getInetAddress() + " 已连接");
-		
-		oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		oout = new ObjectOutputStream(socket.getOutputStream());
+	public Server(){
+		try {
+			server = new ServerSocket(server_port);
+			System.out.println("等待连接...");
+			socket = server.accept();
+			System.out.println("ip: " + socket.getInetAddress() + " 已连接");
+			
+			oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+			oout = new ObjectOutputStream(socket.getOutputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/*
