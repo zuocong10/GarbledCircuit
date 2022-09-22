@@ -7,6 +7,24 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 
 public class WRFile {
+	public static byte[] readAll(String txtPath) {
+		File file = new File(txtPath);
+		if (file.isFile() && file.exists()) {
+			try {
+				Long fileLength = file.length();
+				byte[] content = new byte[fileLength.intValue()];
+				FileInputStream fileInputStream = new FileInputStream(file);
+				fileInputStream.read(content);
+				fileInputStream.close();
+				return content;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("File does not exist!");
+		return null;
+	}
+	
 	public static String readTxt(String txtPath) {
 		File file = new File(txtPath);
 		if (file.isFile() && file.exists()) {
@@ -71,7 +89,24 @@ public class WRFile {
 				// 判断文件是否存在，如果不存在就新建一个txt
 				file.createNewFile();
 			}
-			fileOutputStream = new FileOutputStream(file, true);
+			fileOutputStream = new FileOutputStream(file);
+			fileOutputStream.write(content.getBytes());
+			fileOutputStream.flush();
+			fileOutputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeTxtAppend(String txtPath, String content) {
+		FileOutputStream fileOutputStream = null;
+		File file = new File(txtPath);
+		try {
+			if (!file.exists()) {
+				// 判断文件是否存在，如果不存在就新建一个txt
+				file.createNewFile();
+			}
+			fileOutputStream = new FileOutputStream(file, true); //true means appending new string to the end of the file
 			fileOutputStream.write(content.getBytes());
 			fileOutputStream.flush();
 			fileOutputStream.close();

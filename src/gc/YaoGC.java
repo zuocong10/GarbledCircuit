@@ -1,11 +1,19 @@
 package gc;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
-import gc.entity.Gate;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
+import gc.entity.Circuit;
+import gc.entity.GarbledGate;
 import gc.entity.LabelAndR;
 import util.AES;
+import util.WRFile;
 import util.WRObject;
 
 public class YaoGC {
@@ -34,57 +42,86 @@ public class YaoGC {
 		return r;
 	}
 	
-	public static void AliceGarbledTableGen(String gateType){
-		byte[][] garbledTable = new byte[4][];
+	public static void AliceGarbledTablesGen(String circuitPath){
+		Circuit cir = JSON.parseObject(WRFile.readAll(circuitPath), Circuit.class);
+	
+		Random rnd = new Random(); //This is used to initialize the gate (Generate random labels)
 		
-		Gate gate = new Gate();
-		
-		//Initialize the gate (Generate random labels)
-		
-		Random rnd = new Random();
-		
-		for(int i=0; i<gate.w.length; i++) {
+		for(int i=0; i<cir.wires.length; i++) {
 			byte r = Math.random() > 0.5 ? (byte)0 : (byte)1; //Point and Permute	
-			for(byte j=0; j<gate.w[i].lar.length; j++) {
-				gate.w[i].lar[j].label = randomBytes(labelLength, rnd);
-				gate.w[i].lar[j].r = (byte) (r^j);
+			for(byte j=0; j<cir.wires[i].lar.length; j++) {
+				cir.wires[i].lar[j].label = randomBytes(labelLength, rnd);
+				cir.wires[i].lar[j].r = (byte) (r^j);
 			}
 		}
 		
-		WRObject.writeObjectToFile(gateType + ".bin", gate);
+		String text = JSON.toJSONString(cir, SerializerFeature.PrettyFormat);
+		WRFile.writeTxt("testcircuit_ranLabels.json", text);
 		
-		for(byte i=0; i<gate.w[0].lar.length; i++) {
-			for(byte j=0; j<gate.w[1].lar.length; j++) {
-					
-				garbledTable[gate.w[0].lar[i].r*2+gate.w[1].lar[j].r] = AES.encrypt(gate.w[0].lar[i].label, AES.encrypt(gate.w[1].lar[j].label,
-						WRObject.writeObjectToByteArray(gate.w[2].lar[Operation(i, j, gateType)])));
+		GarbledGate[] gg = new GarbledGate[cir.gates.length];
+		for(int i=0; i<cir.gates.length; i++) {
+			gg[i] = new GarbledGate();
+			gg[i].gate_id = cir.gates[i].gate_id;
+			gg[i].input_wire_ids = cir.gates[i].input_wire_ids;
+			gg[i].output_wire_id = cir.gates[i].output_wire_id;
+			
+			byte[][] garbledTable = new byte[4][];
+			
+			LabelAndR[] lr_input0 = cir.wires[cir.gates[i].input_wire_ids[0]].lar; //The position of wires array is equal to the wire id.
+			LabelAndR[] lr_input1 = cir.wires[cir.gates[i].input_wire_ids[1]].lar;
+			LabelAndR[] lr_output = cir.wires[cir.gates[i].output_wire_id].lar;
+			
+			for(byte j=0; j<lr_input0.length; j++) {
+				for(byte k=0; k<lr_input1.length; k++) {
+						
+					garbledTable[lr_input0[j].r*2+lr_input1[k].r] = AES.encrypt(lr_input0[j].label, AES.encrypt(lr_input1[k].label,
+							WRObject.writeObjectToByteArray(lr_output[Operation(j, k, cir.gates[i].type)])));
+				}
 			}
+			
+			gg[i].garbledTable = garbledTable;
 		}
 		
-		WRObject.writeObjectToFile("garbledTable.bin", garbledTable);
+		String text_gg = JSON.toJSONString(gg, SerializerFeature.PrettyFormat);
+		WRFile.writeTxt("garbledGates.json", text_gg);
 	}
 	
-	public static byte[] BobEva(byte[][] garbledTable, byte[] alice_label, byte alice_r, byte[] bob_label, byte bob_r) {
-		return AES.decrypt(bob_label, AES.decrypt(alice_label, garbledTable[alice_r*2+bob_r]));
+	public static Map<Integer, LabelAndR> BobEva(GarbledGate[] garbledGates, Map<Integer, LabelAndR> lars) {
+		
+		for(int i=0; i<garbledGates.length; i++) {
+			LabelAndR input0_lr = lars.get(garbledGates[i].input_wire_ids[0]);
+			LabelAndR input1_lr = lars.get(garbledGates[i].input_wire_ids[1]);
+			
+			LabelAndR output_lr = (LabelAndR)WRObject.readObjectFromByteArray(AES.decrypt(input1_lr.label, AES.decrypt(input0_lr.label, garbledGates[i].garbledTable[input0_lr.r*2+input1_lr.r])));
+			lars.put(garbledGates[i].output_wire_id, output_lr);
+		}
+		
+		return lars;
 	}
 	
 	public static void main(String[] args) {
-		String gateType = "XOR";
 		
-		YaoGC.AliceGarbledTableGen(gateType);
+		YaoGC.AliceGarbledTablesGen("testcircuit.json");
 		
-		byte[][] garbledTable = (byte[][])WRObject.readObjectFromFile("garbledTable.bin");
+		Circuit cir = JSON.parseObject(WRFile.readAll("testcircuit_ranLabels.json"), Circuit.class);
+		GarbledGate[] ggs = JSON.parseObject(WRFile.readAll("garbledGates.json"), new TypeReference<GarbledGate[]>(){});
 		
-		Gate gate = (Gate) WRObject.readObjectFromFile(gateType + ".bin");
+		Map<Integer, LabelAndR> eva_wires = new HashMap<>();
 		
-		LabelAndR alice = gate.w[0].lar[1];
-		LabelAndR bob = gate.w[1].lar[1];
+		int[] alice_inputs = cir.alice_inputs;
+		int[] bob_inputs = cir.bob_inputs;
 		
-		LabelAndR output = (LabelAndR) WRObject.readObjectFromByteArray(YaoGC.BobEva(garbledTable, alice.label, alice.r, bob.label, bob.r));
+		for(int i=0; i<alice_inputs.length; i++) {
+			eva_wires.put(alice_inputs[i], cir.wires[alice_inputs[i]].lar[0]);
+			eva_wires.put(bob_inputs[i], cir.wires[alice_inputs[i]].lar[0]);
+		}
 		
-		if(Arrays.equals(output.label, gate.w[2].lar[0].label))
+		Map<Integer, LabelAndR> lars = YaoGC.BobEva(ggs, eva_wires);
+		byte[] label_final = lars.get(cir.final_output).label;
+		
+		if(Arrays.equals(label_final, cir.wires[cir.final_output].lar[0].label))
 			System.out.println(0);
-		else if(Arrays.equals(output.label, gate.w[2].lar[1].label))
+		else if(Arrays.equals(label_final, cir.wires[cir.final_output].lar[1].label))
 			System.out.println(1);
 	}
 }
