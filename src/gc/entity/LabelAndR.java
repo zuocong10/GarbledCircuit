@@ -7,4 +7,11 @@ public class LabelAndR implements Serializable{
 	
 	public byte[] label;
 	public byte r; //Point and permute technique: This bit is used to denote which row to be decrypted by Bob (i.e., Evaluator).
+
+	public LabelAndR() {}
+	
+	public LabelAndR(byte[] label, byte r) {
+		this.label = label;
+		this.r = r;
+	}
 }

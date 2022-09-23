@@ -2,23 +2,43 @@ package gc;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import communication.Client;
+import gc.entity.GarbledGate;
 import gc.entity.LabelAndR;
 import ot.OTBob;
-import util.WRObject;
 
 public class YaoBob {
 	
-	public LabelAndR BobEva(Client client, byte b) {
+	public void OTBobReceiveWire(Client client, Map<Integer, LabelAndR> lrs, byte b) {
 		try {
-			byte[][] garbledTable = (byte[][]) client.oin.readObject();
-			LabelAndR alice = (LabelAndR) client.oin.readObject();
+			int wire_id = (int) client.oin.readObject();
 			byte r = (byte) client.oin.readObject();
 			
-			byte[] bob_label = OTBob.BobCom(client, b);
+			byte[] b_label = OTBob.BobCom(client, b);
 			
-			return (LabelAndR) WRObject.readObjectFromByteArray(YaoGC.BobEva(garbledTable, alice.label, alice.r, bob_label, (byte)(r^b)));
+			lrs.put(wire_id, new LabelAndR(b_label, (byte)(r^b)));
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public Map<Integer, LabelAndR> BobEva(Client client, byte[] bob_bs) {
+		try {
+			GarbledGate[] ggs = (GarbledGate[]) client.oin.readObject();
+			
+			@SuppressWarnings("unchecked")
+			Map<Integer, LabelAndR> lrs = (Map<Integer, LabelAndR>) client.oin.readObject();
+			
+			for(int i=0; i<bob_bs.length; i++)
+				OTBobReceiveWire(client, lrs, bob_bs[i]);
+			
+			return YaoGC.BobEva(ggs, lrs);
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -38,11 +58,13 @@ public class YaoBob {
 		Client client = new Client();
 		YaoBob yaoBob = new YaoBob();
 		
-		byte bob_b = 1;
-		LabelAndR lar = yaoBob.BobEva(client, bob_b);
+		byte[] bob_bs = {1, 1};
+		Map<Integer, LabelAndR> lrs = yaoBob.BobEva(client, bob_bs);
+		
+		LabelAndR lr = lrs.get(lrs.size()-1);
 		
 		try {
-			client.oout.writeObject(lar);
+			client.oout.writeObject(lr);
 			client.oout.flush();
 			
 			System.out.println("The final output is: " + (int)client.oin.readObject());

@@ -1,0 +1,33 @@
+{
+	"alice_inputs":[0],
+	"bob_inputs":[1],
+	"final_output":2,
+	"gates":[{
+		"gate_id":0,
+		"input_wire_ids":[0,1],
+		"output_wire_id":2,
+		"type":"AND"
+	}],
+	"wires":[{
+		"lar":[{
+			"r":0
+		},{
+			"r":0
+		}],
+		"wire_id":0
+	},{
+		"lar":[{
+			"r":0
+		},{
+			"r":0
+		}],
+		"wire_id":1
+	},{
+		"lar":[{
+			"r":0
+		},{
+			"r":0
+		}],
+		"wire_id":2
+	}]
+}

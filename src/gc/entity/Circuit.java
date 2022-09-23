@@ -1,11 +1,15 @@
 package gc.entity;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import util.WRFile;
 
-public class Circuit {
+public class Circuit implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
 	public Wire[] wires;
 	public Gate[] gates;
 	

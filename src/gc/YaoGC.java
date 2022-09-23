@@ -56,7 +56,7 @@ public class YaoGC {
 		}
 		
 		String text = JSON.toJSONString(cir, SerializerFeature.PrettyFormat);
-		WRFile.writeTxt("testcircuit_ranLabels.json", text);
+		WRFile.writeTxt(circuitPath.split(".json")[0] + "_ranLabels.json", text);
 		
 		GarbledGate[] gg = new GarbledGate[cir.gates.length];
 		for(int i=0; i<cir.gates.length; i++) {
@@ -83,7 +83,7 @@ public class YaoGC {
 		}
 		
 		String text_gg = JSON.toJSONString(gg, SerializerFeature.PrettyFormat);
-		WRFile.writeTxt("garbledGates.json", text_gg);
+		WRFile.writeTxt(circuitPath.split(".json")[0] + "_garbledGates.json", text_gg);
 	}
 	
 	public static Map<Integer, LabelAndR> BobEva(GarbledGate[] garbledGates, Map<Integer, LabelAndR> lars) {
@@ -104,7 +104,7 @@ public class YaoGC {
 		YaoGC.AliceGarbledTablesGen("testcircuit.json");
 		
 		Circuit cir = JSON.parseObject(WRFile.readAll("testcircuit_ranLabels.json"), Circuit.class);
-		GarbledGate[] ggs = JSON.parseObject(WRFile.readAll("garbledGates.json"), new TypeReference<GarbledGate[]>(){});
+		GarbledGate[] ggs = JSON.parseObject(new String(WRFile.readAll("testcircuit_garbledGates.json")), new TypeReference<GarbledGate[]>(){});
 		
 		Map<Integer, LabelAndR> eva_wires = new HashMap<>();
 		
@@ -112,16 +112,39 @@ public class YaoGC {
 		int[] bob_inputs = cir.bob_inputs;
 		
 		for(int i=0; i<alice_inputs.length; i++) {
-			eva_wires.put(alice_inputs[i], cir.wires[alice_inputs[i]].lar[0]);
-			eva_wires.put(bob_inputs[i], cir.wires[alice_inputs[i]].lar[0]);
+			eva_wires.put(alice_inputs[i], cir.wires[alice_inputs[i]].lar[1^i]);
+			eva_wires.put(bob_inputs[i], cir.wires[bob_inputs[i]].lar[i]);
 		}
 		
 		Map<Integer, LabelAndR> lars = YaoGC.BobEva(ggs, eva_wires);
+		
 		byte[] label_final = lars.get(cir.final_output).label;
 		
 		if(Arrays.equals(label_final, cir.wires[cir.final_output].lar[0].label))
 			System.out.println(0);
 		else if(Arrays.equals(label_final, cir.wires[cir.final_output].lar[1].label))
+			System.out.println(1);
+		
+		YaoGC.AliceGarbledTablesGen("AND.json");
+		Circuit cir2 = JSON.parseObject(WRFile.readAll("AND_ranLabels.json"), Circuit.class);
+		GarbledGate[] ggs2 = JSON.parseObject(new String(WRFile.readAll("AND_garbledGates.json")), new TypeReference<GarbledGate[]>() {});
+		
+		Map<Integer, LabelAndR> eva_wires2 = new HashMap<>();
+		
+		int[] alice_inputs2 = cir2.alice_inputs;
+		int[] bob_inputs2 = cir2.bob_inputs;
+		
+		for(int i=0; i<alice_inputs2.length; i++) {
+			eva_wires2.put(alice_inputs2[i], cir2.wires[alice_inputs2[i]].lar[1]);
+			eva_wires2.put(bob_inputs2[i], cir2.wires[bob_inputs2[i]].lar[0]);
+		}
+		
+		Map<Integer, LabelAndR> lars2 = YaoGC.BobEva(ggs2, eva_wires2);
+		byte[] label_final2 = lars2.get(cir2.final_output).label;
+		
+		if(Arrays.equals(label_final2, cir2.wires[cir2.final_output].lar[0].label))
+			System.out.println(0);
+		else if(Arrays.equals(label_final2, cir2.wires[cir2.final_output].lar[1].label))
 			System.out.println(1);
 	}
 }
